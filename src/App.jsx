@@ -1,24 +1,24 @@
 import { useState } from "react";
 import "./App.css";
 
-const initialItems = [
-  { id: 1, description: "Passports", quantity: 2, packed: false },
-  { id: 2, description: "Socks", quantity: 12, packed: true },
-  { id: 3, description: "Shirts", quantity: 12, packed: false },
-];
+// const initialItems = [
+//   { id: 1, description: "Passports", quantity: 2, packed: false },
+//   { id: 2, description: "Socks", quantity: 12, packed: true },
+//   { id: 3, description: "Shirts", quantity: 12, packed: false },
+// ];
 
-function App() {
+export default function App() {
+  const [items, setItems] = useState([]);
+  const handleAddItems = (item) => setItems((items) => [...items, item]);
   return (
     <main>
       <Logo />
-      <Form />
-      <PackingList />
+      <Form onAddItems={handleAddItems} />
+      <PackingList items={items} />
       <Stats />
     </main>
   );
 }
-
-export default App;
 
 const Logo = () => (
   <h1>
@@ -28,10 +28,26 @@ const Logo = () => (
   </h1>
 );
 
-const Form = () => {
-  const handleSubmit = (e) => e.preventDefault();
+const Form = ({ onAddItems }) => {
   const [description, setDescription] = useState("");
-  const [quantity, setQuantity] = useState(2);
+  const [quantity, setQuantity] = useState(1);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!description) return;
+
+    const newItem = {
+      description,
+      quantity,
+      packed: false,
+      id: Date.now(),
+    };
+
+    onAddItems(newItem);
+
+    setDescription("");
+    setQuantity(1);
+  };
 
   return (
     <form className="add-form" onSubmit={handleSubmit}>
@@ -57,15 +73,15 @@ const Form = () => {
   );
 };
 
-const PackingList = () => {
+const PackingList = ({ items }) => {
   const styles = { textDecoration: "line-through" };
   return (
     <div className="list">
       <ul>
-        {initialItems.map((item) => (
-          <li key={item.id}>
-            <span style={item.packed == true ? styles : {}}>
-              {item.id} {item.description}
+        {items.map(({ quantity, description, packed, id }) => (
+          <li key={id}>
+            <span style={packed == true ? styles : {}}>
+              {quantity} {description}
             </span>
             <button>❌</button>
           </li>
