@@ -1,21 +1,35 @@
 import { useState } from "react";
 import "./App.css";
 
-// const initialItems = [
-//   { id: 1, description: "Passports", quantity: 2, packed: false },
-//   { id: 2, description: "Socks", quantity: 12, packed: true },
-//   { id: 3, description: "Shirts", quantity: 12, packed: false },
-// ];
-
 export default function App() {
   const [items, setItems] = useState([]);
-  const handleAddItems = (item) => setItems((items) => [...items, item]);
+  // Adding Items
+  const handleAddItems = (item) => {
+    setItems([...items, item]);
+  };
+  // Deleting Items
+  const handleDeleteItems = (id) => {
+    setItems(items.filter((item) => item.id !== id));
+  };
+  // Updating Items
+  const handleToggleItems = (id) => {
+    setItems(
+      items.map((item) =>
+        item.id === id ? { ...item, packed: !item.packed } : item
+      )
+    );
+  };
+
   return (
     <main>
       <Logo />
       <Form onAddItems={handleAddItems} />
-      <PackingList items={items} />
-      <Stats />
+      <PackingList
+        items={items}
+        onDeleteItems={handleDeleteItems}
+        onToggleItems={handleToggleItems}
+      />
+      <Stats items={items} />
     </main>
   );
 }
@@ -73,17 +87,22 @@ const Form = ({ onAddItems }) => {
   );
 };
 
-const PackingList = ({ items }) => {
+const PackingList = ({ items, onDeleteItems, onToggleItems }) => {
   const styles = { textDecoration: "line-through" };
   return (
     <div className="list">
       <ul>
         {items.map(({ quantity, description, packed, id }) => (
           <li key={id}>
+            <input
+              type="checkbox"
+              value={packed}
+              onChange={() => onToggleItems(id)}
+            />
             <span style={packed == true ? styles : {}}>
               {quantity} {description}
             </span>
-            <button>❌</button>
+            <button onClick={() => onDeleteItems(id)}>❌</button>
           </li>
         ))}
       </ul>
@@ -91,8 +110,27 @@ const PackingList = ({ items }) => {
   );
 };
 
-const Stats = () => (
-  <footer>
-    <em>🎒 You have X items on your list and you already packed X (X%)</em>
-  </footer>
-);
+const Stats = ({ items }) => {
+  if (!items.length) {
+    return (
+      <footer>
+        <small>start parking your travelling list 🛬</small>
+      </footer>
+    );
+  }
+
+  const itemsQty = items.length;
+  const totalItemsPacked = items.filter((item) => item.packed).length;
+  const percentage = Math.round((totalItemsPacked / itemsQty) * 100);
+
+  return (
+    <footer>
+      <small>
+        {percentage === 100
+          ? "You have got everything ready to go 🛩️"
+          : ` 🎒 You have ${itemsQty} items on your list and you already packed
+        ${totalItemsPacked} (${percentage}%)`}
+      </small>
+    </footer>
+  );
+};
