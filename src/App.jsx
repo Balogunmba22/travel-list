@@ -88,24 +88,49 @@ const Form = ({ onAddItems }) => {
 };
 
 const PackingList = ({ items, onDeleteItems, onToggleItems }) => {
-  const styles = { textDecoration: "line-through" };
+  const [sortBy, setSortBy] = useState("input");
+
+  let sortedItems;
+  if (sortBy === "input") sortedItems = items;
+  if (sortBy === "description")
+    sortedItems = [...items].sort((a, b) =>
+      a.description.localeCompare(b.description)
+    );
+  if (sortBy === "packed")
+    sortedItems = [...items].sort(
+      (a, b) => Number(a.packed) - Number(b.packed)
+    );
+
+  const handleClearList = () => setSortBy((sortBy) => (sortBy = ""));
+
   return (
     <div className="list">
       <ul>
-        {items.map(({ quantity, description, packed, id }) => (
+        {sortedItems.map(({ quantity, description, packed, id }) => (
           <li key={id}>
             <input
               type="checkbox"
               value={packed}
               onChange={() => onToggleItems(id)}
             />
-            <span style={packed == true ? styles : {}}>
+            <span
+              style={packed == true ? { textDecoration: "line-through" } : {}}
+            >
               {quantity} {description}
             </span>
             <button onClick={() => onDeleteItems(id)}>❌</button>
           </li>
         ))}
       </ul>
+
+      <div className="actions">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="input">Sort by input</option>
+          <option value="description">Sort by description</option>
+          <option value="packed">Sort by packed</option>
+        </select>
+        <button onClick={handleClearList}>Clear list</button>
+      </div>
     </div>
   );
 };
